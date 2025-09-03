@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Information</title>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="header-btn">Home</a>
+        <a href="Poornima.html" class="header-btn">Info</a>
+        <input type="text" id="searchBox" placeholder="Search in page...">
+        <button id="searchBtn" class="header-btn">Search</button>
+        <button id="prevBtn" class="header-btn">Prev</button>
+        <button id="nextBtn" class="header-btn">Next</button>
+        <span id="searchInfo"></span>
+    </header>
+
+    <h1>WELCOME TO CENTRAL LIBRARY</h1>
+
+    <div class="library-container" style="height: 80vh; overflow-y: auto;">
+        <a href="https://drive.google.com/drive/u/1/mobile/folders/12EhNCogmtlaFwIlksNoG9tbcqgvJ2l7x/15C6Ch67BP5G2ezNplfhdSC_dcD6PNXLz/1EtDaaJFds-QoiMK01gT-hOq99T06fdvC/130XPhTPJldJExJYt3pyNlqasT_PXRIub/12MqCcqPBLq6SZo0_gY6KxX8vvbNfKCWG/1WcAp4XukDAvE6RGK3AznIhHKK5eZxi1n/1OWuX1IezlXrf-F2IuG8zw5RDZ_uIkmvt/1cC8aFLdreMy926leshqH4_JmxYJ2mBpu?usp=sharing_eip&ts=66fe1c94&pli=1&sort=13&direction=a">PYQ'S</a>
+        <a href="https://www.google.com/search?gs_ssp=eJzj4tbP1TcwNCw0KcsuM2D0Ei7Izy_Ky8xNVCjNyyxLLSrOLKkEALvSC-Q&q=poornima+university&oq=poornima&gs_lcrp=EgZjaHJvbWUqDAgBEC4YJxiABBiKBTIMCAAQRRg5GLEDGIAEMgwIARAuGCcYgAQYigUyDggCEEUYJxg7GIAEGIoFMgcIAxAuGIAEMhAIBBAuGK8BGMcBGIAEGI4FMgcIBRAAGIAEMgcIBhAAGIAEMgcIBxAAGIAEMgcICBAAGIAE0gEJNTYwM2owajE1qAIMsAIB8QXavSgiQWC6OPEF2r0oIkFgujg&sourceid=chrome&ie=UTF-8">Main Website</a>
+    </div>
+
+    <footer class="footer">
+        <h4>If you want to know about availablity of any particular book. Click 
+            <a href="https://www.digialm.com/EForms/configuredHtml/422/50872/application.html?lUserOrgId=32455">here</a>, 
+            you will be redirect to OPAC LIBRARY website of university
+        </h4>
+        <div class="footer-container">
+            <div class="footer-logo">
+                <img src="https://poornima.edu.in/assets/images/PULogo.png" alt="Poornima University Logo">
+                <h2>POORNIMA <br>UNIVERSITY</h2>
+            </div>
+            <div class="footer-info">
+                <p>
+                    IS-2027-2031, Ramchandrapura, P.O. Vidhani Vatika,<br>
+                    Sitapura Extension, Jaipur, Rajasthan (India) 303905.
+                </p>
+                <hr>
+                <p>📧 <a href="mailto:centrallibrary@poornima.edu.in">centrallibrary@poornima.edu.in</a></p>
+                <p><span class="whatsapp">📱</span> +91-8875 666 618</p>
+                <p>☎️ +91-8875 666 617</p>
+                <hr>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    let currentIndex = 0;
+    let matches = [];
+
+    function clearHighlights() {
+        let oldMarks = document.querySelectorAll("mark");
+        oldMarks.forEach(m => {
+            let parent = m.parentNode;
+            parent.replaceChild(document.createTextNode(m.textContent), m);
+            parent.normalize();
+        });
+    }
+
+    function searchAndHighlight() {
+        let searchTerm = document.getElementById("searchBox").value.trim();
+        clearHighlights();
+        matches = [];
+        currentIndex = 0;
+        document.getElementById("searchInfo").textContent = "";
+
+        if (!searchTerm) return;
+
+        let content = document.querySelector(".library-container");
+        let regex = new RegExp(searchTerm, "gi");
+
+        function highlightText(node) {
+            if (node.nodeType === 3) {
+                let match = node.nodeValue.match(regex);
+                if (match) {
+                    let span = document.createElement("span");
+                    span.innerHTML = node.nodeValue.replace(regex, `<mark>$&</mark>`);
+                    node.replaceWith(span);
+                    span.querySelectorAll("mark").forEach(m => matches.push(m));
+                }
+            } else if (node.nodeType === 1 && node.childNodes && !["SCRIPT","STYLE"].includes(node.tagName)) {
+                node.childNodes.forEach(highlightText);
+            }
+        }
+        highlightText(content);
+
+        if (matches.length > 0) {
+            currentIndex = 0;
+            updateActiveMatch();
+        } else {
+            alert("No matches found.");
+        }
+    }
+
+    function updateActiveMatch() {
+        matches.forEach(m => m.classList.remove("active"));
+        if (matches.length > 0) {
+            matches[currentIndex].classList.add("active");
+            matches[currentIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+            document.getElementById("searchInfo").textContent = `${currentIndex+1} of ${matches.length}`;
+        }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", searchAndHighlight);
+    document.getElementById("nextBtn").addEventListener("click", function() {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex + 1) % matches.length;
+            updateActiveMatch();
+        }
+    });
+    document.getElementById("prevBtn").addEventListener("click", function() {
+        if (matches.length > 0) {
+            currentIndex = (currentIndex - 1 + matches.length) % matches.length;
+            updateActiveMatch();
+        }
+    });
+    </script>
+</body>
+</html>

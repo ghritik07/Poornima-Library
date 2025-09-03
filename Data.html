@@ -1,0 +1,1068 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Information & Catalog</title>
+  <style>
+    :root {
+      --blue: #1e3a8a;       /* deep blue */
+      --pink: #ec4899;       /* vibrant pink */
+      --bg-light: #f0f4ff;   /* very light blue background */
+      --text-dark: #1f2937;  /* dark text */
+      --text-light: #ffffff; /* white text */
+      --border: #d1d5db;     /* light gray border */
+      --hover-bg: #fce7f3;   /* light pink hover */
+      --accent-gradient: linear-gradient(135deg, #3b82f6, #ec4899);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      background: var(--blue);
+      color: var(--text-light);
+      padding: 12px 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.5);
+    }
+
+    .nav-top {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-search {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    a.header-btn, button.header-btn {
+      background: var(--pink);
+      color: var(--text-light);
+      padding: 8px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+    }
+
+    a.header-btn:hover, button.header-btn:hover {
+      background: #db2777; /* darker pink */
+    }
+
+    input#searchBox {
+      flex: 1 1 200px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    header span#searchInfo {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #f9a8d4; /* lighter pink */
+      align-self: center;
+    }
+
+    /* Main Title */
+    h1 {
+      text-align: center;
+      margin: 32px 16px 24px;
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Container */
+    .container.library-container {
+      max-width: 1100px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+      flex-grow: 1;
+    }
+
+    /* Toolbar buttons */
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--blue);
+      color: var(--text-light);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--pink); }
+
+    /* Notice text */
+    .notice {
+      font-size: 0.95rem;
+      color: #6b7280;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    /* Catalog details */
+    details {
+      background: #ffffff;
+      border: 2px solid var(--blue);
+      border-radius: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 8px rgb(30 58 138 / 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+
+    details[open] { box-shadow: 0 6px 12px rgb(236 72 153 / 0.3); }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--blue);
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .badge {
+      background: var(--pink);
+      color: var(--text-light);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-weight: 900;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .rack-title { flex-grow: 1; letter-spacing: 0.03em; }
+
+    .count {
+      color: #9ca3af;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Content inside details */
+    .content {
+      padding: 12px 24px 20px;
+      background: #f9fafb;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* Books list */
+    ul.books {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      columns: 1;
+      column-gap: 24px;
+    }
+
+    @media (min-width: 700px) { ul.books { columns: 2; } }
+    @media (min-width: 1024px) { ul.books { columns: 3; } }
+
+    ul.books li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: background-color 0.3s ease;
+    }
+
+    ul.books li:hover { background-color: var(--hover-bg); }
+
+    a.book {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    a.book:hover {
+      color: var(--pink);
+      text-decoration: underline;
+    }
+
+    mark {
+      background: var(--pink);
+      color: var(--text-light);
+      padding: 0 0.2em;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    mark.active { background: var(--blue); color: var(--text-light); }
+
+    /* Footer */
+    footer.footer {
+      background: var(--blue);
+      color: var(--text-light);
+      padding: 32px 16px;
+      text-align: center;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+
+    footer.footer h4 {
+      margin: 0 0 16px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    footer.footer h4 a {
+      color: var(--pink);
+      text-decoration: underline;
+    }
+
+    footer.footer h4 a:hover { color: #db2777; }
+
+    .footer-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 16px;
+    }
+
+    .footer-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      min-width: 180px;
+    }
+
+    .footer-logo img { max-width: 100px; height: auto; }
+
+    .footer-logo h2 {
+      margin: 0;
+      font-weight: 900;
+      font-size: 1.5rem;
+      line-height: 1.1;
+      color: var(--pink);
+      text-align: center;
+    }
+
+    .footer-info {
+      max-width: 400px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #d1d5db;
+      text-align: left;
+    }
+
+    .footer-info hr {
+      border: none;
+      border-top: 1px solid #374151;
+      margin: 12px 0;
+    }
+
+    .footer-info p { margin: 6px 0; }
+
+    .footer-info a {
+      color: var(--pink);
+      text-decoration: none;
+    }
+
+    .footer-info a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="nav-top">
+      <div class="nav-left">
+        <a href="index.html" class="header-btn">Home</a>
+        <a href="Poornima.html" class="header-btn">Info</a>
+      </div>
+      <div class="nav-right">
+        <a href="https://drive.google.com/drive/u/1/folders/1EtDaaJFds-QoiMK01gT-hOq99T06fdvC" target="_blank" class="header-btn">📂 PYQ's</a>
+        <a href="https://poornima.edu.in/" class="header-btn">Main Website</a>
+      </div>
+    </div>
+
+    <div class="nav-search">
+      <input type="text" id="searchBox" placeholder="Search in page...">
+      <button id="searchBtn" class="header-btn">Search</button>
+      <button id="prevBtn" class="header-btn">Prev</button>
+      <button id="nextBtn" class="header-btn">Next</button>
+      <span id="searchInfo"></span>
+    </div>
+  </header>
+
+  <h1>WELCOME TO CENTRAL LIBRARY</h1>
+
+  <!-- Catalog -->
+  <div class="container library-container">
+    <div class="toolbar">
+      <button class="btn" id="expandAll">Expand all</button>
+      <button class="btn" id="collapseAll">Collapse all</button>
+    </div>
+    <div class="notice">
+      All book titles link to a live Google search for that book title (best for finding multiple editions & sources).
+    </div>
+    <div id="catalog"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <h4>If you want to know about availablity of any particular book. Click 
+      <a href="https://www.digialm.com/EForms/configuredHtml/422/50872/application.html?lUserOrgId=32455">here</a>, 
+      you will be redirect to OPAC LIBRARY website of university
+    </h4>
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="https://poornima.edu.in/assets/images/PULogo.png" alt="Poornima University Logo">
+        <h2>POORNIMA <br>UNIVERSITY</h2>
+      </div>
+      <div class="footer-info">
+        <p>IS-2027-2031, Ramchandrapura, P.O. Vidhani Vatika,<br>Sitapura Extension, Jaipur, Rajasthan (India) 303905.</p>
+        <hr>
+        <p>📧 <a href="mailto:centrallibrary@poornima.edu.in">centrallibrary@poornima.edu.in</a></p>
+        <p>📱 +91-8875 666 618</p>
+        <p>☎️ +91-8875 666 617</p>
+        <hr>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* === Catalog Data === */
+    const racks = [
+      {rack :1,title:"Official Documents",items:[]},
+      { rack: 2, title: "Competition Books", items: [
+        "Job Search Success",
+        "Data Structure",
+        "Analytical Reasoning",
+        "Logical & General Reasoning",
+        "Quantitative Aptitude",
+        "GATE, IES/OBJ",
+        "SSC (ALL BOOK)",
+        "Lucid General Knowledge",
+        "Objective Computer",
+        "NTPS / Objective Civil Engineering"
+      ]},
+      { rack: 3, title: "Arts", items: [
+        "Geography",
+        "Economics",
+        "Philosophy",
+        "Sociology",
+        "English Literature",
+        "Political Science & History"
+      ]},
+      { rack: 4, title: "Political Science &History", items: [
+        "Western Political Thought",
+        "Political Ideologies",
+        "Indian Government & Politics / Modernization of Indian Tradition",
+        "Principles of Political Science",
+        "Indian Government",
+        "Indian Political Thinkers",
+        "Constitution of India",
+        "Indian Polity",
+        "Human Institutions",
+        "Inter. Law & Human Right / Public Administration",
+        "Indian Culture",
+        "India Since Independence",
+        "History at the World",
+        "History of Medical India",
+        "India Ancient",
+        "History / Culture of Rajasthan",
+        "History of India",
+        "Modern Indian History",
+        
+      ]},
+      { rack: 5, title: "Chemistry", items: [
+        " Chemistry",
+        "Practcal Chemistry",
+        "Physical Chemistry",
+        "Quantative Chemistry",
+        "Engineering Chemistry",
+        "Quantam/PolymerChemistry",
+      ]},
+      { rack: 6, title: "Chemistry", items: [
+        "Engineering Chemistry"
+      ]},
+      { rack: 7, title: "Chemistry & Environmental", items: [
+        "Inorganic Chemistry",
+        "Organic Chemistry",
+        "Fundamental of Molecular Spectroscopy",
+        "Wildlife Conservation Management",
+        "Environmental Pollution",
+        "Environmental Studies",
+        "Engineering Environmental",
+        "Environmental Chemistry",
+        "Textbook of Environmental",
+        "Ecology & Environmental Management",
+        "Environmental Engineering",
+        "Analysis of Water Quality",
+        "Lab Manual",
+        "Environmental Engineering & Disaster Management"
+      ]},
+      { rack: 8, title: "Mathematics", items: [
+        "Real Analysis",
+        "Logic, Sets & Recursion",
+        "Mathematical Modeling with Excel / Sampling Methods",
+        "Calculus",
+        "Linear Algebra",
+        "Differential Equation",
+        "Higher Engineering Mathematics",
+        "Mathematics (NCERT)",
+        "Numerical Method / Analysis"
+      ]},
+      { rack: 9, title: "Mathematics", items: [
+        "Discrete Mathematical Structures",
+        "Analytical Geometry",
+        "Basic Mathematics",
+        "Probability, Statistics and Queuing Theory",
+        "Linear Algebra",
+        "Complex Variable",
+        "Modern Algebra",
+        "Statics",
+        "Graph Theory",
+        "Solid Geometry",
+        "Mathematics & English"
+      ]},
+      { rack: 10, title: "Mathematics", items: [
+        "Aptitude on Engineering Mathematics",
+        "Engineering Mathematics - II",
+        "Engineering Mathematics - I",
+        
+      ]},
+      { rack:11,title: "English",items: [
+        "Communicative Technique",
+        "Effective Technical Communication",
+        "Word Power Made Easy",
+        "Technical Communication",
+        "Soft Skill",
+        "Communication Skills"
+      ]},
+      { rack: 12, title: "English", items: [
+        "English for Engineers",
+        "The Written Word",
+        "English Literature",
+        "English Selected Prose and Verse",
+        "Version Originated - Method of Translation",
+        "Communicative English",
+        "English Grammar",
+        "Professional Communication",
+        "Computer"
+      ]},
+      { rack: 13, title: "Computer", items: [
+        "Artificial Neural Network",
+        "Artificial Neural Networks",
+        "Artificial Intelligence",
+        "Advanced Computer Architecture",
+        "Intelligent Systems",
+        "Internet of Thanks",
+        "Artificial Intel",
+        "Network Security",
+        "Software Engineering CCE Integrated Security",
+        "Introduction To Information Security"
+      ]},
+      { rack: 14, title: "Computer", items: [
+        "Compilers",
+        "Human - Computer",
+        "CCNA",
+        "TCP/IP",
+        "Microsoft Office"
+      ]},
+      { rack: 15, title: "Computer", items: [
+        "An Introduction To Database Systems",
+        "Database Systems Concepts",
+        "Database Systems",
+        "Fundamentals Database Systems",
+        "Data Communications and Networking",
+        "Data and Computer Communications",
+        "Object Oriented Database System",
+        "Data Communication Networks Process",
+        "Networking and Theory for Data Synthesis",
+        "Programming Skills for Data Mining",
+        "Application of Statistics with Spreadsheet",
+        "Application of History",
+        "Data Mining",
+        "Computer Networks",
+        "The English Guide E - The Internet Reference",
+        "Installation and Application of Computing Interfaces",
+        "Designing Extensive Interfaces"
+      ]},
+      { rack: 16, title: "Computer", items: [
+        "Operating Systems",
+        "Distributed System",
+        "Client Server",
+        "Computer Futures",
+        "Object Oriented Programming",
+        "BIG DATA",
+        "Animation System"
+      ]},
+      { rack: 17, title: "Computer", items: [
+        "Cloud Computing",
+        "Advanced Android Apps",
+        "Computer Graphics",
+        "MULTIMEDIA",
+        "Internet Reference E-book",
+        "Introduction To Information Security",
+        "Algorithms",
+        "Pattern Recognition and Image Analysis"
+      ]},
+      { rack: 18, title: "Computer", items: [
+        "Soft Computing",
+        "Software Engineering",
+        "Software Testing",
+        "Software Project Management",
+        "Neuro FUZZY and Soft Computing",
+        "FUZZY Logic",
+        "Cryptographic",
+        "Cyber Security",
+        "Introduction To Computers",
+        "Compilers"
+      ]},
+      { rack: 19, title: "Computer", items: [
+        "Programming in C, Programming in C (NIG), Computer Concept C Programming, Computer C Concept Programming in C, All of C",
+        "Programming in ANSI C",
+        "Let Us C",
+        "Programming with C, An Introduction to Parallel Programming",
+        "Complete Reference C, Be Pratical",
+        "C Projects, Programming with C, How to programming, Understanding pointers in C, The C Programming Languages",
+        "Data Structures, Data Structures USING C, Data Structures Though, Data Structures USING C and C++",
+        "C#"
+      ]},
+      { rack: 20, title: "Computer", items: [
+        "Computer Reference C++",
+        "Let Us C++",
+        "A Workbook in C++",
+        "C++Programming in C++ Programming, Program Design",
+        "Object Oriented Programming with C++, Object Oriented Using C++",
+        "Numerical Methods with Computer Program",
+        "OODPS WITH C++",
+        "Computer Science C++"
+      ]},
+      { rack: 21, title: "Computer", items: [
+        "Python, Machine Learning, Machine Learning Python, All python books, Deep Learning",
+        "JAVA, J2EE/JSP, Nikal-jilla in JAVA",
+        " JAVA",
+        "JAVA/JSP"
+      ]},
+      { rack: 22, title: "Computer", items: [
+        "Computer Fundamentals",
+        "Computer Fundamentals, Computer Fundamentals Organization, Computer Fundamentals and Programming in C",
+        "Computer Fundamentals and C Programming",
+        "Fundamentals of Computers, Fundamentals of Computers Programming"
+      ]},
+      { rack: 23, title: "PROGRAMMING", items: [
+        "Programming Languages, Essentials of programming Languages, Concepts of programming Languages, An Introduction To Formal Languages And Automata All Languages books",
+        "Computer Programming - 1"
+      ]},
+      { rack: 24, title: "Computer", items: [
+        "UNIX, LINUX, Fedora 8 Red Hat LINUX",
+        "Object Oriented Programming Modeling, Object Oriented Modeling and Design with UML",
+        "Theory of Computation, Theory of Computer Science"
+      ]},
+      { rack: 25, title: "Computer", items: [
+        "Web Technology",
+        "HTML",
+        "R for Everyone, R Programming, R for beginners",
+        "MY SQL, PHP"
+      ]},
+      { rack: 26, title: "Computer", items: [
+        "Computer Organization and Architecture",
+        "Computer Organization and Design",
+        "Microcontroller and Embedded Systems",
+        "Microprocessors and Microcontroller",
+        "Microprocessor Architecture",
+        "Embedded System Design",
+        "MATLAB",
+        "Visual Basic",
+        "Electronics"
+      ]},
+      { rack: 27, title: "Electronics", items: [
+        "Optical Fiber Communication",
+        "Wireless Communication and Network",
+        "Digital Logic and Computer Design",
+        "Mobile Communication",
+        "Digital Communication"
+      ]},
+      { rack: 28, title: "Electronics", items: [
+        "Microelectronic Circuits",
+        "Power Electronics",
+        "Electronic Instrumentation",
+        "Electronic Devices and Circuits",
+        "Electronics Devices and Circuits"
+      ]},
+      { rack: 29, title: "Electronics", items: [
+        "Modern Control Engineering",
+        "Process Measurement and Analysis",
+        "Control System",
+        "Linear Control Systems",
+        "Integrated Electronics",
+        "VLSI",
+        "HDL"
+      ]},
+      { rack: 30, title: "Electronics", items: [
+        "Digital Circuits and Design",
+        "Digital Design",
+        "Digital Signal Processing",
+        "Digital Electronics",
+        "Signals and Systems",
+        "Discrete Time Signal Processing",
+        "Digital Image Processing",
+        "MATLAB",
+        "Digital Logic",
+        "Circuits and Network",
+        "Biomedical Instrumentation",
+        "Automatic Control Systems",
+        "COMS",
+        "Microwave"
+      ]},
+      { rack: 31, title: "Electronics", items: [
+        "Electromagnetic Field Theory",
+        "Vibration and Waves",
+        "Algorithms",
+        "Elements of Electronic Instrumentation and Measurement",
+        "Satellite Communications",
+        "Antennas and Wave Propagation",
+        "Measurements Systems",
+        "Nanotechnology",
+        "Solar Photovoltaics",
+        "Analog Electronics",
+        "Electronics Components And Materials",
+        "Electrical"
+      ]},
+      { rack: 32, title: "Electrical", items: [
+        "Electrical and Electronics Measurement and Instrumentation",
+        "Communication Measurement and Analysis",
+        "EHV-AC, HVDC",
+        "HVDC Power Transmission System",
+        "High Voltage Engineering",
+        "FACTS Controllers in Power Transmission & Distribution",
+        "Generation Distribution and Utilization of Electrical Energy",
+        "Circuit Theory"
+      ]},
+      { rack: 33, title: "Electrical", items: [
+        "Switchgear, Protection and Power System",
+        "Pulse, Digital and Switching Waveforms",
+        "Switching & Finite Automata Theory",
+        "Transmission and Distribution Power",
+        "Electric Power Distribution",
+        "Transformers",
+        "Electrical & Electronics Engineering",
+        "Electrical Drives",
+        "Generation of Electrical Energy",
+        "Electrical Technology",
+        "Networks and Systems"
+      ]},
+      { rack: 34, title: "Electrical", items: [
+        "Power System Engineering",
+        "Power System",
+        "Electrical Power Distribution",
+        "Electric Machines",
+        "Electrical Engineering & Electronics",
+        "Modern Electric Traction",
+        "Electrical Engineering Materials",
+        "High Power System Protection",
+        "East Bridge",
+        "Mechanical"
+      ]},
+      { rack: 35, title: "Mechanical", items: [
+        "Manufacturing Technology",
+        "Manufacturing Science",
+        "Computer Integrated Manufacturing",
+        "Manufacturing Processes",
+        "Product Design and Manufacturing",
+        "Heat and Mass Transfer",
+        "Heat Transfer"
+      ]},
+      { rack: 36, title: "Mechanical", items: [
+        "Production Technology",
+        "Production Technology: Manufacturing Processes, Technology and Automation",
+        "Product Design",
+        "Production Engineering and Science",
+        "Production Engineering"
+      ]},
+      { rack: 37, title: "Mechanical", items: [
+        "Power Plant Engineering",
+        "Automobile Engineering",
+        "Automation Production Systems and Computer Integrated Manufacturing",
+        "Refrigeration and Air Conditioning",
+        "Mechanics of Solids"
+      ]},
+      { rack: 38, title: "Mechanical", items: [
+        "Thermal Engineering",
+        "Non Conventional Energy Resources",
+        "Finite Element Procedures",
+        "Quantum Mechanics",
+        "Vector Mechanics for Engineers",
+        "NX 10.0 for Engineers and Designer",
+        "MATLAB and Simulink for Engineers",
+        "CAD/CAM/CIM"
+      ]},
+      { rack: 39, title: "Mechanical", items: [
+        "Theory of Machines",
+        "Theory of Machines and Mechanisms",
+        "Text Book of Machine Design",
+        "Textbook of Mechanics",
+        "Engineering Metrology",
+        "Modern Machining Processes"
+      ]},
+      { rack: 40, title: "Mechanical", items: [
+        "Fluid Mechanics and Hydraulic Machines",
+        "Hydraulics and Fluid Mechanics",
+        "Fluid Mechanics"
+      ]},
+      { rack: 41, title: "Mechanical", items: [
+        "Industrial Engineering and Production Management",
+        "Internal Combustion Engine",
+        "Thermodynamics",
+        "Dynamics of Structures"
+      ]},
+      { rack: 42, title: "Mechanical", items: [
+        "Steam Turbines and Gas Turbines",
+        "Robotics and Control",
+        "Mechanical Measurement and Instrumentation and Control",
+        "Maintenance and Spare Parts Management",
+        "Tool Design",
+        "CNC Machines",
+        "Metal Cutting Theory and Practice"
+      ]},
+      { rack: 43, title: "Mechanical", items: [
+        "Engineering Drawing",
+        "Machine Drawing",
+        "Mechanical Vibrations"
+      ]},
+      { rack: 44, title: "Mechanical", items: [
+        "Engineering Mechanics",
+        "Mechanics",
+        "Kinematics and Dynamics of Machinery",
+        "Kinematics of Machines",
+        "Text Book of Engineering Mechanics",
+        "Fundamentals of Compressible Flow"
+      ]},
+      { rack: 45, title: "Civil", items: [
+        "Mechanics of Materials",
+        "Material Science",
+        "Strength of Materials",
+        "Soil Mechanics",
+        "Construction Project Management",
+        "Geology",
+        "Hydrology",
+        "Remote Sensing and GIS",
+        "Geographic Information System"
+      ]},
+      { rack: 46, title: "Civil", items: [
+        "Surveying",
+        "Wastewater Engineering",
+        "Water Supply Engineering",
+        "Structural Analysis",
+        "Estimating Costing and Valuation",
+        "Exploring Corporate Strategy",
+        "Airport Engineering",
+        "Railway Engineering",
+        "Highway Engineering",
+        "Theory of Structure"
+      ]},
+      { rack: 47, title: "Civil", items: [
+        "Irrigation, Water Power and Water Resource Engineering",
+        "Irrigation, Theory and Practice",
+        "Concrete Technology",
+        "Limit State Design of Steel Structures",
+        "Steel Structures",
+        "Reinforced Concrete Design",
+        "Design of Reinforced Concrete Structures",
+        "RCC Design",
+        "Building Construction and Materials",
+        "Building Planning",
+        "Computer Application in Civil Engineering"
+      ]},
+      { rack: 48, title: "Architecture & M. Plan", items: [
+        "History of Architecture",
+        "Architectural Structures",
+        "Building Services",
+        "Architectural Design",
+        "Architectural Building Construction & Materials",
+        "Art & Design Fundamentals",
+        "Architectural Geometry & Perspective",
+        "Computer Application",
+        "Landscape Architecture",
+        "Standards"
+      ]},
+      { rack: 49, title: "Planning", items: [
+        "Planning History",
+        "Housing & Environment Planning",
+        "Socio-Economic Base for Planning",
+        "Planning Studio",
+        "GIS-Survey & Statistics",
+        "Planning Techniques",
+        "Project Planning & Management",
+        "Urban Region Planning & Development"
+      ]},
+      { rack: 50, title: "Fashion & Design", items: [
+        "Visual Arts & Fine Arts",
+        "Textile",
+        "Fashion",
+        "Color",
+        "Interior Design",
+        "Space Making",
+        "Game Design and Development"
+      ]},
+      {rack :51,title: "Management",items:[
+        "Sales and distribution management",
+        "Consumer behaviour",
+        "Project Management",
+        "Product Management",
+        "Brand and operation management",
+        "Production and Operation management"
+      ]},
+      { rack:52 ,title: "Mangement",items:[
+        "Financial Management",
+        "Indian Financial System",
+        "Inernational Financial Management",
+        "Multinational Business Finance",
+        "Financial Derivatives",
+        "Opption future and other deriavtives",
+        "Financial Market and Associatives",
+        "Financial Services"
+
+      ]},
+      { rack: 53, title: "Management / Economics", items: [
+        "Managerial Economics",
+        "Principles of Economics",
+        "Economics for Managers",
+        "Macroeconomics",
+        "Microeconomics",
+        "Economic Legislation",
+        "Indian Economy",
+        "International Economics",
+        "Emerging Trends in Business and Economy",
+        "Econometric Analysis",
+        "Economic Development",
+        "Effective Training",
+        "Investments",
+        "Investment Analysis and Portfolio Management",
+        "Banking",
+        "Commercial Banking",
+        "Merchant Banking and Financial Services",
+        "Management of Banking and Financial Services",
+        "Banking Risk and Insurance Management",
+        "Managing Change",
+        "Branding unbound",
+        "Mergers and Acquisitions And Corporate Restructurings",
+        "Security Analysis and Portfolio Management"
+      ]},
+      { rack: 54, title: "HR & Leadership", items: [
+        "Human Resource Management",
+        "International Human Resource Management",
+        "Advanced Human Resource Management",
+        "Human Resource Planning and Business Strategy",
+        "Training and Development",
+        "Life Insurance",
+        "Disaster Management and Risk Reduction",
+        "Futures and Options",
+        "Leadership",
+        "Understanding Behaviours for Effective Leadership",
+        "Roadmap To Strategic Hr"
+      ]},
+      { rack: 55, title: "Management", items: [
+        "Knowledge Management",
+        "Compensation Management",
+        "Performance Management",
+        "Management Accounting",
+        "Provisional Management",
+        "Principles of Management",
+        "Essentials of Management",
+        "Introduction to Management",
+        "Supply Chain Management",
+        "Operations Supply Management",
+        "Retail Management",
+        "Advertising Management",
+        "Advertising & Sales Promotion",
+        "Contemporary Advertising",
+        "Advertising & Promotion"
+      ]},
+      { rack: 56, title: "Strategy & IB", items: [
+        "Organisational Behavior",
+        "Organization Development",
+        "Strategic Management",
+        "Exploring Corporate Strategic",
+        "Strategic Management Business",
+        "Strategic Planning Formulation of Corporate Strategic",
+        "Creating & Executive Strategy",
+        "International Business",
+        "Case Study"
+      ]},
+      { rack: 57, title: "Accounting", items: [
+        "Advance Accountancy",
+        "Corporate Accounting",
+        "Accounting for Management",
+        "Accounting",
+        "Management Accounting",
+        "Cost Accounting",
+        "Financial Accounting",
+        "Income Tax",
+        "Goods and Service Tax",
+        "Auditing"
+      ]},
+      { rack: 58, title: "Quant, Ethics & Communication", items: [
+        "Quantitative Techniques",
+        "Quantitative Techniques in Management",
+        "Total Quality Management",
+        "Statistics for Managers",
+        "Business Statistics",
+        "Business Intelligence and Analytics",
+        "Business Communication",
+        "Entrepreneurship",
+        "Business Policy",
+        "Business Analytics",
+        "Entrepreneurial Development",
+        "Business Ethics",
+        "Human Values",
+        "Professional Ethics",
+        "Ethics in Engineering",
+        "MLA Handbook for Writers of Research Paper"
+      ]},
+      { rack: 59, title: "Research & MIS", items: [
+        "Operation Research",
+        "Business Research Methods",
+        "Research Methodology",
+        "Management Information System",
+        "Computer Application in Management",
+        "Information Technology for Management",
+        "E-Commerce"
+      ]},
+      { rack: 60, title: "Law & Environment", items: [
+        "Sports Management",
+        "Business Demography",
+        "Business Environment",
+        "International Business Environment",
+        "Business and Corporate Law",
+        "Business Law",
+        "Industrial Relation and Labour Laws",
+        "Industrial Law",
+        "Mercantile Law"
+      ]},
+      { rack: 61, title: "Marketing", items: [
+        "Marketing Management",
+        "Global Marketing Management",
+        "International Marketing",
+        "Marketing Research",
+        "Digital Marketing",
+        "Service Marketing"
+      ]},
+      { rack: 62, title: "Sales / Product / Operations", items: [
+        "Sales and Distribution Management",
+        "Consumer Behavior",
+        "Project Management",
+        "Product Management",
+        "Brand Management",
+        "Operations Management",
+        "Production and Operations Management"
+      ]}
+    ]; // keep your full racks array here (unchanged)
+
+    const catalog = document.getElementById('catalog');
+    const buildSearchLink = (title) => `https://www.google.com/search?q=${encodeURIComponent(title+" book")}`;
+    const highlight = (text, term) => !term ? text : text.replace(new RegExp(term,"ig"), m=>`<mark>${m}</mark>`);
+
+    function render(list, term=''){
+      catalog.innerHTML = '';
+      list.forEach(({rack,title,items})=>{
+        const filtered = term? items.filter(t=>t.toLowerCase().includes(term.toLowerCase())): items;
+        if(!filtered.length && term) return;
+        const el=document.createElement('details'); if(term) el.open=true;
+        const sum=document.createElement('summary');
+        sum.innerHTML=`<span class="badge">Rack ${rack}</span> <span class="rack-title">${highlight(title||'',term)}</span> <span class="count">${filtered.length||items.length} items</span>`;
+        const ul=document.createElement('ul'); ul.className="books";
+        (filtered.length?filtered:items).forEach(txt=>{
+          const li=document.createElement('li');
+          const a=document.createElement('a'); a.className="book"; a.href=buildSearchLink(txt); a.target="_blank"; a.innerHTML=highlight(txt,term);
+          li.appendChild(a); ul.appendChild(li);
+        });
+        const div=document.createElement('div'); div.className="content"; div.appendChild(ul);
+        el.appendChild(sum); el.appendChild(div); catalog.appendChild(el);
+      });
+    }
+    render(racks);
+
+    document.getElementById('expandAll').addEventListener('click',()=>document.querySelectorAll('#catalog details').forEach(d=>d.open=true));
+    document.getElementById('collapseAll').addEventListener('click',()=>document.querySelectorAll('#catalog details').forEach(d=>d.open=false));
+
+    /* === Search === */
+    let currentIndex=0; let matches=[];
+    function clearHighlights(){document.querySelectorAll("mark").forEach(m=>{m.replaceWith(m.textContent);});}
+    function searchAndHighlight(){
+      let term=document.getElementById("searchBox").value.trim();
+      clearHighlights(); matches=[]; currentIndex=0; document.getElementById("searchInfo").textContent="";
+      if(!term) return; render(racks,term);
+      matches=document.querySelectorAll("mark");
+      if(matches.length>0){updateActiveMatch();} else {alert("No matches found.");}
+    }
+    function updateActiveMatch(){
+      matches.forEach(m=>m.classList.remove("active"));
+      if(matches.length>0){
+        matches[currentIndex].classList.add("active");
+        matches[currentIndex].scrollIntoView({behavior:"smooth",block:"center"});
+        document.getElementById("searchInfo").textContent=`${currentIndex+1} of ${matches.length}`;
+      }
+    }
+    document.getElementById("searchBtn").addEventListener("click",searchAndHighlight);
+    // Trigger search when pressing Enter in the input box
+document.getElementById("searchBox").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault(); // Prevent page refresh
+    searchAndHighlight();
+  }
+});
+
+    document.getElementById("nextBtn").addEventListener("click",()=>{if(matches.length>0){currentIndex=(currentIndex+1)%matches.length;updateActiveMatch();}});
+    document.getElementById("prevBtn").addEventListener("click",()=>{if(matches.length>0){currentIndex=(currentIndex-1+matches.length)%matches.length;updateActiveMatch();}});
+  </script>
+</body>
+</html>
